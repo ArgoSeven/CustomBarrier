@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "custombarrier",
+  "version": "${version}",
+  "name": "CustomBarrier",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/custombarrier/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "org.argoseven.custombarrier.client.CustomBarrierClient"
+    ],
+    "main": [
+      "org.argoseven.custombarrier.CustomBarrier"
+    ]
+  },
+  "mixins": [
+    "custombarrier.mixins.json",
+    {
+      "config": "custombarrier.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
