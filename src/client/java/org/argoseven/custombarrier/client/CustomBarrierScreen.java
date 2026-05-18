@@ -87,6 +87,8 @@ public class CustomBarrierScreen extends Screen {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        drawTextWithShadow(matrices, this.textRenderer, Text.of("Particle"), this.width / 2 - 100,  this.height / 2 - 52, 16777215);
+        drawTextWithShadow(matrices, this.textRenderer, Text.of("Tag"), this.width / 2 - 100,  this.height / 2 - 12, 16777215);
         this.renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
     }

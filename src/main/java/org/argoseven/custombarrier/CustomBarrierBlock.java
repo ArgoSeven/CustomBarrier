@@ -1,10 +1,9 @@
 package org.argoseven.custombarrier;
 
-import com.mojang.datafixers.kinds.IdF;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -33,7 +32,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock, Waterloggable {
     public static final BooleanProperty WATERLOGGED = Properties.WATERLOGGED;
@@ -51,7 +50,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
     @Override
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return new CustomBarrierBlockEntity(CustomBarrier.CUSTOM_BARRIER_BLOCK_ENTITY, pos, state);
+        return new CustomBarrierBlockEntity(ModdedRegister.CUSTOM_BARRIER_BLOCK_ENTITY, pos, state);
     }
 
     @Override
@@ -79,22 +78,24 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
         return context.isHolding(CustomBarrier.CUSTOM_BARRIER_BLOCK.asItem()) ? VoxelShapes.fullCube() : VoxelShapes.empty();
     }*/
 
-
     @Override
     public boolean isTranslucent(BlockState state, BlockView world, BlockPos pos) {
         return true;
     }
 
-
     @Override
-    public BlockState getStateForNeighborUpdate(
-            BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos
-    ) {
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        BlockPos blockPos = ctx.getBlockPos();
+        World world = ctx.getWorld();
+        return (BlockState)((BlockState)((BlockState)this.getDefaultState().with(WATERLOGGED, world.getFluidState(blockPos).getFluid() == Fluids.WATER)));
+    }
+    
+    @Override
+    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
         if ((Boolean)state.get(WATERLOGGED)) {
             world.createAndScheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
         }
-
-        return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+        return state;
     }
 
     @Override
@@ -104,7 +105,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
     @Override
     public FluidState getFluidState(BlockState state) {
-        return state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
+        return (Boolean)state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
     }
 
     @Override
@@ -117,7 +118,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
         // Vuoto: non blocca né interagisce
     }
 
-
+    
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (world.isClient) {
@@ -137,14 +138,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
                 double offsetX = random.nextDouble() - 0.5;
                 double offsetY = random.nextDouble() - 0.5;
                 double offsetZ = random.nextDouble() - 0.5;
-
-                world.addParticle(
-                        particle,
-                        pos.getX() + 0.5 + offsetX,
-                        pos.getY() + 0.5 + offsetY,
-                        pos.getZ() + 0.5 + offsetZ,
-                        0, 0, 0
-                );
+                world.addParticle(particle, pos.getX() + 0.5 + offsetX, pos.getY() + 0.5 + offsetY, pos.getZ() + 0.5 + offsetZ, 0, 0, 0);
             }
         }
     }
@@ -153,7 +147,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (player.isCreativeLevelTwoOp() && blockEntity instanceof CustomBarrierBlockEntity) {
+        if (player.isCreativeLevelTwoOp() && blockEntity instanceof CustomBarrierBlockEntity && (player.getOffHandStack().getItem() != ModdedRegister.CUSTOM_BARRIER_ITEM)) {
             if (!world.isClient) {
                 var buf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
                 buf.writeBlockPos(pos);
@@ -166,13 +160,22 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     }
 
     public static void canPass(PlayerEntity player, String tag){
-        if (tag == null) {return;}
-        String delimiter = ";";
-        //String[] tagArray = tag.contains(delimiter) ? tag.split(delimiter) : new String[]{tag};
-        if (player != null && player.getScoreboardTags() != null && player.getScoreboardTags().contains(tag.toString()) && !player.hasStatusEffect(StatusEffects.LUCK)) {
+        String delimiter = ",";
+        if (tag == null) return;
+        boolean isValidPlayer = player != null && player.getScoreboardTags() != null && !player.hasStatusEffect(StatusEffects.LUCK);
+        if (!isValidPlayer) return;
+
+        if (tag.contains(delimiter)) {
+            String[] tagsArray = tag.split(delimiter);
+            if (player.getScoreboardTags().containsAll(List.of(tagsArray))){
+                player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+            }
+        }else if (player.getScoreboardTags().contains(tag)) {
             player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
         }
     }
+
+
 
     private static DefaultParticleType getParticleById(String id) {
         if (id != null) {
