@@ -5,10 +5,12 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.argoseven.custombarrier.BarrierMode;
 import org.argoseven.custombarrier.CustomBarrierBlockEntity;
 import org.lwjgl.glfw.GLFW;
 
@@ -17,10 +19,13 @@ public class CustomBarrierScreen extends Screen {
     private final BlockEntity blockEntity;
     private TextFieldWidget particleIdField;
     private TextFieldWidget customStringField;
+    private BarrierMode currentMode;// default
 
-    public CustomBarrierScreen(BlockEntity blockEntity) {
+
+    public CustomBarrierScreen(CustomBarrierBlockEntity blockEntity) {
         super(Text.literal("Custom Barrier Settings"));
         this.blockEntity = blockEntity;
+        this.currentMode = blockEntity.getMode();
     }
 
     @Override
@@ -43,8 +48,26 @@ public class CustomBarrierScreen extends Screen {
             Text.literal("Custom String")
         );
         this.customStringField.setMaxLength(32767);
-        this.customStringField.setText(be.getTags());
+        this.customStringField.setText(be.getCheck());
         this.addDrawableChild(customStringField);
+
+        CyclingButtonWidget<BarrierMode> modeButton = CyclingButtonWidget.builder(
+                        (BarrierMode mode) -> Text.literal(mode.name())
+                )
+                .values(BarrierMode.values())
+                .initially(this.currentMode)
+                .omitKeyText()
+                .build(
+                        this.width / 2 + 105,
+                        this.height / 2,
+                        60,
+                        20,
+                        Text.empty(),
+                        (button, value) -> {
+                            this.currentMode = value;
+                        }
+                );
+        this.addDrawableChild(modeButton);
 
         this.addDrawableChild(new ButtonWidget(
                 this.width / 2 - 50,
@@ -64,6 +87,7 @@ public class CustomBarrierScreen extends Screen {
             buf.writeBlockPos(be.getPos());
             buf.writeString(particleId);
             buf.writeString(customString);
+            buf.writeEnumConstant(currentMode);
             ClientPlayNetworking.send(SINK_BARRIER_PACKET, buf);
         }
         this.close();
@@ -88,7 +112,7 @@ public class CustomBarrierScreen extends Screen {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         drawTextWithShadow(matrices, this.textRenderer, Text.of("Particle"), this.width / 2 - 100,  this.height / 2 - 52, 16777215);
-        drawTextWithShadow(matrices, this.textRenderer, Text.of("Tag"), this.width / 2 - 100,  this.height / 2 - 12, 16777215);
+        drawTextWithShadow(matrices, this.textRenderer, Text.of("Check"), this.width / 2 - 100,  this.height / 2 - 12, 16777215);
         this.renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
     }

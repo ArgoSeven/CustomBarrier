@@ -1,9 +1,15 @@
 package org.argoseven.custombarrier;
 
+import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.loot.condition.LootCondition;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -14,6 +20,8 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -33,9 +41,11 @@ import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock, Waterloggable {
     public static final BooleanProperty WATERLOGGED = Properties.WATERLOGGED;
+
     protected CustomBarrierBlock(Settings settings) {
         super(settings
                 .noCollision()
@@ -60,7 +70,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
             if (entity instanceof PlayerEntity player) {
                 if (world.getBlockEntity(pos) instanceof CustomBarrierBlockEntity be){
-                    canPass(player, be.getTags());
+                    canPass(player, be);
                     if (player.hasStatusEffect(StatusEffects.LUCK)) {
                         return VoxelShapes.empty();
                     }
@@ -81,6 +91,12 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     @Override
     public boolean isTranslucent(BlockState state, BlockView world, BlockPos pos) {
         return true;
+    }
+
+
+    @Override
+    public float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
+        return 1.0F;
     }
 
     @Override
@@ -144,6 +160,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     }
 
 
+
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -159,20 +176,49 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
         }
     }
 
-    public static void canPass(PlayerEntity player, String tag){
+    public static void canPass(PlayerEntity player, CustomBarrierBlockEntity customBarrierBlockEntity) {
         String delimiter = ",";
-        if (tag == null) return;
+        if (customBarrierBlockEntity == null) return;
         boolean isValidPlayer = player != null && player.getScoreboardTags() != null && !player.hasStatusEffect(StatusEffects.LUCK);
         if (!isValidPlayer) return;
 
-        if (tag.contains(delimiter)) {
-            String[] tagsArray = tag.split(delimiter);
-            if (player.getScoreboardTags().containsAll(List.of(tagsArray))){
-                player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
-            }
-        }else if (player.getScoreboardTags().contains(tag)) {
-            player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+        switch (customBarrierBlockEntity.getMode()) {
+            case TAG:
+                String tag = customBarrierBlockEntity.getCheck();
+                if (tag.contains(delimiter)) {
+                    String[] tagsArray = tag.split(delimiter);
+                    if (player.getScoreboardTags().containsAll(List.of(tagsArray))){
+                        player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                    }
+                }else if (player.getScoreboardTags().contains(tag)) {
+                    player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                }
+                break;
+            case PLAYER:
+                if (Objects.equals(player.getDisplayName().getString(), customBarrierBlockEntity.getCheck())) {
+                    player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                }
+                break;
+            case PREDICATE:
+                if (player instanceof ServerPlayerEntity serverPlayerEntity) {
+                    LootCondition condition = serverPlayerEntity.getWorld().getServer().getPredicateManager().get(Identifier.tryParse(customBarrierBlockEntity.getCheck()));
+                    if (condition != null) {
+                        LootContext lootContext = new LootContext.Builder(serverPlayerEntity.getWorld())
+                                .parameter(LootContextParameters.THIS_ENTITY, serverPlayerEntity)
+                                .parameter(LootContextParameters.ORIGIN, serverPlayerEntity.getPos())
+                                .build(LootContextTypes.COMMAND);
+                        boolean match = condition.test(lootContext);
+                        if (match) {
+                            player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
         }
+
+
     }
 
 

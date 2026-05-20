@@ -5,6 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
@@ -17,7 +18,7 @@ public class ModdedRegister {
     public static final Block CUSTOM_BARRIER_BLOCK = new CustomBarrierBlock(FabricBlockSettings.of(Material.METAL).strength(4.0f).luminance(5));
     public static final Item CUSTOM_BARRIER_ITEM = new CustomBarrierBlockItem(CUSTOM_BARRIER_BLOCK, new Item.Settings().group(ItemGroup.MISC));
     public static BlockEntityType<CustomBarrierBlockEntity> CUSTOM_BARRIER_BLOCK_ENTITY;
-
+    public static final StatusEffect ETHEREAL_EFFECT =  new EtherealEffect();
 
     private static CustomBarrierBlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new CustomBarrierBlockEntity(CUSTOM_BARRIER_BLOCK_ENTITY, pos, state);
@@ -26,6 +27,7 @@ public class ModdedRegister {
     public static void register() {
         Registry.register(Registry.BLOCK, new Identifier(MOD_ID, "custom_barrier"), CUSTOM_BARRIER_BLOCK);
         Registry.register(Registry.ITEM, new Identifier(MOD_ID, "custom_barrier"), CUSTOM_BARRIER_ITEM);
+        Registry.register(Registry.STATUS_EFFECT, new Identifier(CustomBarrier.MOD_ID, "ethereal_effect"), ETHEREAL_EFFECT);
         CUSTOM_BARRIER_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, new Identifier(MOD_ID, "custom_barrier"), BlockEntityType.Builder.create(ModdedRegister::createBlockEntity, CUSTOM_BARRIER_BLOCK).build(null));
     }
 }

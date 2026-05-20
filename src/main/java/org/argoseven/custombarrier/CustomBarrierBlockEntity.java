@@ -11,7 +11,8 @@ import org.jetbrains.annotations.Nullable;
 public class CustomBarrierBlockEntity extends BlockEntity {
 
     private String particleId = "minecraft:scrape";
-    private String tags = "";
+    private String check = "";
+    private BarrierMode mode = BarrierMode.TAG;
 
     public CustomBarrierBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -30,12 +31,12 @@ public class CustomBarrierBlockEntity extends BlockEntity {
         }
     }
 
-    public String getTags() {
-        return tags;
+    public String getCheck() {
+        return check;
     }
 
-    public void setTags(String str) {
-        this.tags = str != null ? str : "";
+    public void setCheck(String str) {
+        this.check = str != null ? str : "";
         markDirty();
         if (world != null) {
             BlockState state = world.getBlockState(pos);
@@ -43,18 +44,33 @@ public class CustomBarrierBlockEntity extends BlockEntity {
         }
     }
 
+    public void setMode(BarrierMode mode) {
+        this.mode = mode != null ? mode : BarrierMode.TAG;
+        markDirty();
+        if (world != null) {
+            BlockState state = world.getBlockState(pos);
+            world.updateListeners(pos, state, state, 3);
+        }
+    }
+
+    public BarrierMode getMode() {return mode;}
+
     @Override
     protected void writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
         nbt.putString("particleId", particleId);
-        nbt.putString("customString", tags);
+        nbt.putString("customString", check);
+        nbt.putString("mode", mode.name());
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
         this.particleId = nbt.getString("particleId");
-        this.tags = nbt.getString("customString");
+        this.check = nbt.getString("customString");
+        if (nbt.contains("mode")) {
+            this.mode = BarrierMode.valueOf(nbt.getString("mode"));
+        }
     }
 
     @Nullable
