@@ -1,10 +1,8 @@
 package org.argoseven.custombarrier;
 
-import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
@@ -13,14 +11,12 @@ import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.predicate.entity.EntityPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
@@ -70,14 +66,17 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
             if (entity instanceof PlayerEntity player) {
                 if (world.getBlockEntity(pos) instanceof CustomBarrierBlockEntity be){
-                    canPass(player, be);
-                    if (player.hasStatusEffect(StatusEffects.LUCK)) {
+                    if (!player.hasStatusEffect(ModdedRegister.ETHEREAL_EFFECT) && canPass(player, be)){
+                        if (!player.getWorld().isClient){
+                            player.addStatusEffect(new StatusEffectInstance(ModdedRegister.ETHEREAL_EFFECT, 10, 0));
+                        }
+                    }
+                    if (player.hasStatusEffect(ModdedRegister.ETHEREAL_EFFECT)) {
                         return VoxelShapes.empty();
                     }
                 }
             }
         }
-
         return VoxelShapes.fullCube();
     }
 
@@ -138,13 +137,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (world.isClient) {
-            PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 3, false);
-
-            if (player != null && player.hasStatusEffect(StatusEffects.LUCK)) {
-                return;
-            }
-
-            DefaultParticleType particle = ParticleTypes.SCRAPE;
+            DefaultParticleType particle = ParticleTypes.SMOKE;
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof CustomBarrierBlockEntity customBE) {
                 particle = getParticleById(customBE.getParticleId());
@@ -160,6 +153,10 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     }
 
 
+    @Override
+    protected void spawnBreakParticles(World world, PlayerEntity player, BlockPos pos, BlockState state) {
+        super.spawnBreakParticles(world, player, pos, Blocks.GLASS.getDefaultState());
+    }
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
@@ -176,29 +173,31 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
         }
     }
 
-    public static void canPass(PlayerEntity player, CustomBarrierBlockEntity customBarrierBlockEntity) {
+    public static boolean canPass(PlayerEntity player, CustomBarrierBlockEntity customBarrierBlockEntity) {
         String delimiter = ",";
-        if (customBarrierBlockEntity == null) return;
-        boolean isValidPlayer = player != null && player.getScoreboardTags() != null && !player.hasStatusEffect(StatusEffects.LUCK);
-        if (!isValidPlayer) return;
+        if (customBarrierBlockEntity == null) return false;
+        boolean isValidPlayer = player != null && player.getScoreboardTags() != null;
+        if (!isValidPlayer || customBarrierBlockEntity.getCheck() == null || customBarrierBlockEntity.getCheck().isEmpty()) return false;
 
         switch (customBarrierBlockEntity.getMode()) {
             case TAG:
                 String tag = customBarrierBlockEntity.getCheck();
                 if (tag.contains(delimiter)) {
                     String[] tagsArray = tag.split(delimiter);
-                    if (player.getScoreboardTags().containsAll(List.of(tagsArray))){
-                        player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                    if (player.getScoreboardTags().containsAll(List.of(tagsArray))) {
+                        return true;
                     }
-                }else if (player.getScoreboardTags().contains(tag)) {
-                    player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                } else if (player.getScoreboardTags().contains(tag)) {
+                    return true;
                 }
                 break;
+
             case PLAYER:
                 if (Objects.equals(player.getDisplayName().getString(), customBarrierBlockEntity.getCheck())) {
-                    player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                    return true;
                 }
                 break;
+
             case PREDICATE:
                 if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                     LootCondition condition = serverPlayerEntity.getWorld().getServer().getPredicateManager().get(Identifier.tryParse(customBarrierBlockEntity.getCheck()));
@@ -207,9 +206,8 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
                                 .parameter(LootContextParameters.THIS_ENTITY, serverPlayerEntity)
                                 .parameter(LootContextParameters.ORIGIN, serverPlayerEntity.getPos())
                                 .build(LootContextTypes.COMMAND);
-                        boolean match = condition.test(lootContext);
-                        if (match) {
-                            player.setStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 10,1), null);
+                        if (condition.test(lootContext)) {
+                            return true;
                         }
                     }
                 }
@@ -217,8 +215,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
             default:
                 break;
         }
-
-
+        return false;
     }
 
 
