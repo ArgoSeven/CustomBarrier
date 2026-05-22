@@ -3,6 +3,7 @@ package org.argoseven.custombarrier;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.effect.StatusEffect;
@@ -15,7 +16,8 @@ import net.minecraft.util.registry.Registry;
 import static org.argoseven.custombarrier.CustomBarrier.MOD_ID;
 
 public class ModdedRegister {
-    public static final Block CUSTOM_BARRIER_BLOCK = new CustomBarrierBlock(FabricBlockSettings.of(Material.METAL).strength(4.0f).luminance(5));
+
+    public static final Block CUSTOM_BARRIER_BLOCK = new CustomBarrierBlock(FabricBlockSettings.of(Material.GLASS).luminance(3).strength(-1.0F, 3600000.0F).dropsNothing());
     public static final Item CUSTOM_BARRIER_ITEM = new CustomBarrierBlockItem(CUSTOM_BARRIER_BLOCK, new Item.Settings().group(ItemGroup.MISC));
     public static BlockEntityType<CustomBarrierBlockEntity> CUSTOM_BARRIER_BLOCK_ENTITY;
     public static final StatusEffect ETHEREAL_EFFECT =  new EtherealEffect();

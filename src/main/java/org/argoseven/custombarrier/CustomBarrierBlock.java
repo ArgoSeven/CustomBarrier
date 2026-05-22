@@ -1,5 +1,7 @@
 package org.argoseven.custombarrier;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -15,6 +17,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -137,7 +140,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (world.isClient) {
-            DefaultParticleType particle = ParticleTypes.SMOKE;
+            ParticleEffect particle = ParticleTypes.SMOKE;
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof CustomBarrierBlockEntity customBE) {
                 if (customBE.isOpaque()){
@@ -227,13 +230,20 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
 
 
-    private static DefaultParticleType getParticleById(String id) {
-        if (id != null) {
-            ParticleType<?> particleType = Registry.PARTICLE_TYPE.get(new Identifier(id));
-            if (particleType instanceof DefaultParticleType) {
-                return (DefaultParticleType) particleType;
-            }
+    private static ParticleEffect getParticleById(String id) {
+        if (id == null || id.isEmpty()) return ParticleTypes.SMOKE;
+        try {
+            StringReader reader = new StringReader(id);
+            Identifier identifier = Identifier.fromCommandInput(reader);
+            ParticleType<?> type = Registry.PARTICLE_TYPE.get(identifier);
+            if (type == null) return ParticleTypes.SMOKE;
+            return readParticleParameters(type, reader);
+        } catch (Exception e) {
+            return ParticleTypes.SMOKE;
         }
-        return ParticleTypes.SMOKE;
+    }
+
+    private static <T extends ParticleEffect> T readParticleParameters(ParticleType<T> type, StringReader reader) throws CommandSyntaxException {
+        return type.getParametersFactory().read(type, reader);
     }
 }
