@@ -2,7 +2,7 @@ package org.argoseven.custombarrier.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.util.math.BlockPos;
 import org.argoseven.custombarrier.BarrierMode;
 import org.argoseven.custombarrier.CustomBarrierBlockEntity;
@@ -14,7 +14,7 @@ import static org.argoseven.custombarrier.CustomBarrier.OPEN_SCREEN_PACKET;
 public class CustomBarrierClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        BlockEntityRendererRegistry.register(ModdedRegister.CUSTOM_BARRIER_BLOCK_ENTITY, CustomBarrierBlockEntityRenderer::new);
+        BlockEntityRendererFactories.register(ModdedRegister.CUSTOM_BARRIER_BLOCK_ENTITY, CustomBarrierBlockEntityRenderer::new);
 
         ClientPlayNetworking.registerGlobalReceiver(OPEN_SCREEN_PACKET, (client, handler, buf, responseSender) -> {
             BlockPos pos = buf.readBlockPos();
