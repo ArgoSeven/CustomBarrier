@@ -9,8 +9,8 @@ import net.minecraft.world.World;
 
 public class CustomBarrier implements ModInitializer {
     public static final String MOD_ID = "custombarrier";
-    public static final Identifier OPEN_SCREEN_PACKET = new Identifier(MOD_ID, "open_screen");
-    public static final Identifier SINK_BARRIER_PACKET = new Identifier("argotweaks", "sink_barrier");
+            public static final Identifier OPEN_SCREEN_PACKET = new Identifier(MOD_ID, "open_screen");
+    public static final Identifier SINK_BARRIER_PACKET = new Identifier(MOD_ID, "sink_barrier");
 
 
     @Override

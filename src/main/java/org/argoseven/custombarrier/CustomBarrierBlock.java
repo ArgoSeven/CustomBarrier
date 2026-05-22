@@ -196,7 +196,11 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
                 break;
 
             case PLAYER:
-                if (Objects.equals(player.getDisplayName().getString(), customBarrierBlockEntity.getCheck())) {
+                String check = customBarrierBlockEntity.getCheck();
+                if (check.contains(delimiter)) {
+                    String[] players = check.split(delimiter);
+                    return  List.of(players).contains(player.getDisplayName().getString());
+                }else if (Objects.equals(player.getDisplayName().getString(), customBarrierBlockEntity.getCheck())) {
                     return true;
                 }
                 break;

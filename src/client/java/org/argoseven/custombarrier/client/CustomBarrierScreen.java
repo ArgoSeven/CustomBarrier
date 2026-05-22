@@ -12,14 +12,14 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.argoseven.custombarrier.BarrierMode;
+import org.argoseven.custombarrier.CustomBarrier;
 import org.argoseven.custombarrier.CustomBarrierBlockEntity;
 import org.lwjgl.glfw.GLFW;
 
 public class CustomBarrierScreen extends Screen {
-    private static final Identifier SINK_BARRIER_PACKET = new Identifier("argotweaks", "sink_barrier");
     private final BlockEntity blockEntity;
     private TextFieldWidget particleIdField;
-    private TextFieldWidget customStringField;
+    private TextFieldWidget checkStringField;
     private BarrierMode currentMode;
     private CheckboxWidget opaqueCheckbox;
 
@@ -49,7 +49,7 @@ public class CustomBarrierScreen extends Screen {
                 be.isOpaque()
         );
         this.addDrawableChild(this.opaqueCheckbox);
-        this.customStringField = new TextFieldWidget(
+        this.checkStringField = new TextFieldWidget(
             this.textRenderer,
             this.width / 2 - 100,
             this.height / 2,
@@ -57,9 +57,9 @@ public class CustomBarrierScreen extends Screen {
             20,
             Text.literal("Custom String")
         );
-        this.customStringField.setMaxLength(32767);
-        this.customStringField.setText(be.getCheck());
-        this.addDrawableChild(customStringField);
+        this.checkStringField.setMaxLength(32767);
+        this.checkStringField.setText(be.getCheck());
+        this.addDrawableChild(checkStringField);
 
         CyclingButtonWidget<BarrierMode> modeButton = CyclingButtonWidget.builder(
                         (BarrierMode mode) -> Text.literal(mode.name())
@@ -92,7 +92,7 @@ public class CustomBarrierScreen extends Screen {
     private void saveSettings() {
         if (blockEntity instanceof CustomBarrierBlockEntity be) {
             String particleId = particleIdField.getText();
-            String customString = customStringField.getText();
+            String customString = checkStringField.getText();
             boolean opaque = opaqueCheckbox.isChecked();
             var buf = PacketByteBufs.create();
             buf.writeBlockPos(be.getPos());
@@ -100,7 +100,7 @@ public class CustomBarrierScreen extends Screen {
             buf.writeString(customString);
             buf.writeEnumConstant(currentMode);
             buf.writeBoolean(opaque);
-            ClientPlayNetworking.send(SINK_BARRIER_PACKET, buf);
+            ClientPlayNetworking.send(CustomBarrier.SINK_BARRIER_PACKET, buf);
         }
         this.close();
     }

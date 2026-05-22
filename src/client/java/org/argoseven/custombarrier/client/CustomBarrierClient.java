@@ -8,7 +8,6 @@ import org.argoseven.custombarrier.BarrierMode;
 import org.argoseven.custombarrier.CustomBarrierBlockEntity;
 import org.argoseven.custombarrier.ModdedRegister;
 import org.argoseven.custombarrier.client.render.CustomBarrierBlockEntityRenderer;
-
 import static org.argoseven.custombarrier.CustomBarrier.OPEN_SCREEN_PACKET;
 
 public class CustomBarrierClient implements ClientModInitializer {
