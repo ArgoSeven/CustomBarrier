@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CheckboxWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -19,7 +20,8 @@ public class CustomBarrierScreen extends Screen {
     private final BlockEntity blockEntity;
     private TextFieldWidget particleIdField;
     private TextFieldWidget customStringField;
-    private BarrierMode currentMode;// default
+    private BarrierMode currentMode;
+    private CheckboxWidget opaqueCheckbox;
 
 
     public CustomBarrierScreen(CustomBarrierBlockEntity blockEntity) {
@@ -38,7 +40,15 @@ public class CustomBarrierScreen extends Screen {
         this.particleIdField.setMaxLength(32767);
         this.particleIdField.setText(be.getParticleId());
         this.addDrawableChild(particleIdField);
-        
+
+        this.opaqueCheckbox = new CheckboxWidget(
+                this.width / 2 + 105,
+                this.height / 2 - 40,
+                20,20,
+                Text.of("Opaque"),
+                be.isOpaque()
+        );
+        this.addDrawableChild(this.opaqueCheckbox);
         this.customStringField = new TextFieldWidget(
             this.textRenderer,
             this.width / 2 - 100,
@@ -83,11 +93,13 @@ public class CustomBarrierScreen extends Screen {
         if (blockEntity instanceof CustomBarrierBlockEntity be) {
             String particleId = particleIdField.getText();
             String customString = customStringField.getText();
+            boolean opaque = opaqueCheckbox.isChecked();
             var buf = PacketByteBufs.create();
             buf.writeBlockPos(be.getPos());
             buf.writeString(particleId);
             buf.writeString(customString);
             buf.writeEnumConstant(currentMode);
+            buf.writeBoolean(opaque);
             ClientPlayNetworking.send(SINK_BARRIER_PACKET, buf);
         }
         this.close();

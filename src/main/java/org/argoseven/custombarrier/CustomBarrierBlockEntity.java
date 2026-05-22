@@ -13,6 +13,7 @@ public class CustomBarrierBlockEntity extends BlockEntity {
     private String particleId = "minecraft:scrape";
     private String check = "";
     private BarrierMode mode = BarrierMode.TAG;
+    private boolean opaque = false;
 
     public CustomBarrierBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -55,12 +56,26 @@ public class CustomBarrierBlockEntity extends BlockEntity {
 
     public BarrierMode getMode() {return mode;}
 
+    public boolean isOpaque() {
+        return opaque;
+    }
+
+    public void setOpaque(boolean opaque) {
+        this.opaque = opaque;
+        markDirty();
+        if (world != null) {
+            BlockState state = world.getBlockState(pos);
+            world.updateListeners(pos, state, state, 3);
+        }
+    }
+
     @Override
     protected void writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
         nbt.putString("particleId", particleId);
         nbt.putString("customString", check);
         nbt.putString("mode", mode.name());
+        nbt.putBoolean("opaque", opaque);
     }
 
     @Override
@@ -71,6 +86,7 @@ public class CustomBarrierBlockEntity extends BlockEntity {
         if (nbt.contains("mode")) {
             this.mode = BarrierMode.valueOf(nbt.getString("mode"));
         }
+        this.opaque = nbt.getBoolean("opaque");
     }
 
     @Nullable

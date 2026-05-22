@@ -125,7 +125,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
     @Override
     public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.INVISIBLE;
+        return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -140,6 +140,9 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
             DefaultParticleType particle = ParticleTypes.SMOKE;
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof CustomBarrierBlockEntity customBE) {
+                if (customBE.isOpaque()){
+                    return;
+                }
                 particle = getParticleById(customBE.getParticleId());
             }
 

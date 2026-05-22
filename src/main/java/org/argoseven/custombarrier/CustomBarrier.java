@@ -22,12 +22,14 @@ public class CustomBarrier implements ModInitializer {
             String particleId = buf.readString(32767);
             String customString = buf.readString(32767);
             BarrierMode mode = buf.readEnumConstant(BarrierMode.class);
+            boolean opaque = buf.readBoolean();
             server.execute(() -> {
                 World world = player.getWorld();
                 if (world.getBlockEntity(pos) instanceof CustomBarrierBlockEntity be) {
                     be.setParticleId(particleId);
                     be.setCheck(customString);
                     be.setMode(mode);
+                    be.setOpaque(opaque);
                     be.markDirty();
                     BlockState state = world.getBlockState(pos);
                     world.updateListeners(pos, state, state, 3);
