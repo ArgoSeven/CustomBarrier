@@ -14,7 +14,7 @@ A Fabric mod that adds a **configurable barrier block** with selective player pa
   - `PREDICATE` — this mode will use minecraft vanilla predicate system
 - **Ethereal Effect** — a status effect granted on successful check that allows temporary passthrough (10 ticks)
 - **Custom particles** — any particle type ID configurable per block
-- **Opaque toggle** — renders as an End Gateway–style beam when enabled; invisible otherwise
+- **Opaque toggle** — renders as an End Gateway when enabled; invisible otherwise
 - **Waterloggable**
 - **Configuration GUI** — creative-level-2-op players right-click (offhand empty, not holding the barrier) to open
 - **No collision** until the player's check passes
