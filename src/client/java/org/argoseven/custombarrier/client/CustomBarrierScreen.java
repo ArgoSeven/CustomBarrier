@@ -74,7 +74,7 @@ public class CustomBarrierScreen extends Screen {
                     String m = mode.name().toLowerCase();
                     List<OrderedText> lines = new ArrayList<>();
                     if (mode == BarrierMode.TAG || mode == BarrierMode.PLAYER) {
-                        lines.add(Text.literal(m + " supports delimeter [,] to add more " + m + "s").asOrderedText());
+                        lines.add(Text.literal(m + " supports delimeter [ , ] to add more " + m + "s").asOrderedText());
                         return lines;
                     }
                     lines.add(Text.literal(m).asOrderedText());
