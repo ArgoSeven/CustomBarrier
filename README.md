@@ -12,7 +12,7 @@ A Fabric mod that adds a **configurable barrier block** with selective player pa
   - `TAG` — player must have specific scoreboard tags (comma-separated for multiple)
   - `PLAYER` — player's display name must match (comma-separated for multiple)
   - `PREDICATE` — this mode will use minecraft vanilla predicate system
-- **Ethereal Effect** — a status effect granted on successful check that allows temporary passthrough (10 ticks)
+- **Ethereal Effect** — a status effect granted on successful check that allows temporary passthrough
 - **Custom particles** — any particle type ID configurable per block
 - **Opaque toggle** — renders as an End Gateway when enabled; invisible otherwise
 - **Waterloggable**
