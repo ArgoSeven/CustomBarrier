@@ -21,6 +21,7 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -51,6 +52,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
                 .nonOpaque()
                 .suffocates((state, world, pos) -> false)
                 .blockVision((state, world, pos) -> false)
+                .sounds(BlockSoundGroup.AMETHYST_BLOCK)
         );
 
         this.setDefaultState(this.stateManager.getDefaultState().with(WATERLOGGED, false));
@@ -158,11 +160,6 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
         }
     }
 
-
-    @Override
-    protected void spawnBreakParticles(World world, PlayerEntity player, BlockPos pos, BlockState state) {
-        super.spawnBreakParticles(world, player, pos, Blocks.GLASS.getDefaultState());
-    }
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {

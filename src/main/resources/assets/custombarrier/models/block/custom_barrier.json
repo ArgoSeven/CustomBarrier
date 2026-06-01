@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "custombarrier:block/custom_barrier"
+    "all": "custombarrier:block/custom_barrier",
+    "particle": "minecraft:block/glass"
   }
 }
