@@ -71,13 +71,8 @@ public class CustomBarrierScreen extends Screen {
                 .initially(this.currentMode)
                 .omitKeyText()
                 .tooltip(mode -> {
-                    String m = mode.name().toLowerCase();
                     List<OrderedText> lines = new ArrayList<>();
-                    if (mode == BarrierMode.TAG || mode == BarrierMode.PLAYER) {
-                        lines.add(Text.literal(m + " supports delimeter [ , ] to add more " + m + "s").asOrderedText());
-                        return lines;
-                    }
-                    lines.add(Text.literal(m).asOrderedText());
+                    lines.add(Text.literal(mode.getDescription()).asOrderedText());
                     return lines;
                 })
                 .build(

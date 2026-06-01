@@ -184,22 +184,21 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
         if (customBarrierBlockEntity == null) return false;
         boolean isValidPlayer = player != null && player.getScoreboardTags() != null;
         if (!isValidPlayer || customBarrierBlockEntity.getCheck() == null || customBarrierBlockEntity.getCheck().isEmpty()) return false;
+        String check = customBarrierBlockEntity.getCheck();
 
         switch (customBarrierBlockEntity.getMode()) {
             case TAG:
-                String tag = customBarrierBlockEntity.getCheck();
-                if (tag.contains(delimiter)) {
-                    String[] tagsArray = tag.split(delimiter);
+                if (check.contains(delimiter)) {
+                    String[] tagsArray = check.split(delimiter);
                     if (player.getScoreboardTags().containsAll(List.of(tagsArray))) {
                         return true;
                     }
-                } else if (player.getScoreboardTags().contains(tag)) {
+                } else if (player.getScoreboardTags().contains(check)) {
                     return true;
                 }
                 break;
 
             case PLAYER:
-                String check = customBarrierBlockEntity.getCheck();
                 if (check.contains(delimiter)) {
                     String[] players = check.split(delimiter);
                     return  List.of(players).contains(player.getDisplayName().getString());
@@ -207,10 +206,14 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
                     return true;
                 }
                 break;
-
+            case MAINHAND:
+                if (Registry.ITEM.getId(player.getMainHandStack().getItem()).toString().equals(check)) {
+                    return true;
+                }
+                break;
             case PREDICATE:
                 if (player instanceof ServerPlayerEntity serverPlayerEntity) {
-                    LootCondition condition = serverPlayerEntity.getWorld().getServer().getPredicateManager().get(Identifier.tryParse(customBarrierBlockEntity.getCheck()));
+                    LootCondition condition = serverPlayerEntity.getWorld().getServer().getPredicateManager().get(Identifier.tryParse(check));
                     if (condition != null) {
                         LootContext lootContext = new LootContext.Builder(serverPlayerEntity.getWorld())
                                 .parameter(LootContextParameters.THIS_ENTITY, serverPlayerEntity)
