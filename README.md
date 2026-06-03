@@ -12,6 +12,7 @@ A Fabric mod that adds a **configurable barrier block** with selective player pa
   - `TAG` — player must have specific scoreboard tags (comma-separated for multiple)
   - `PLAYER` — player's display name must match (comma-separated for multiple)
   - `PREDICATE` — this mode will use minecraft vanilla predicate system
+  - `MAINHAND` — Check the item id in the main hand
 - **Ethereal Effect** — a status effect granted on successful check that allows temporary passthrough
 - **Custom particles** — any particle type ID configurable per block
 - **Opaque toggle** — renders as an End Gateway when enabled; invisible otherwise
@@ -28,11 +29,12 @@ A Fabric mod that adds a **configurable barrier block** with selective player pa
 
 ## Mode Reference
 
-| Mode | Check field value | Behavior |
-|------|-------------------|----------|
-| `TAG` | Scoreboard tag (or comma-separated list) | Player must have **all** listed tags |
-| `PLAYER` | Display name (or comma-separated list) | Player's display name must match |
-| `PREDICATE` | Loot predicate ID | Evaluated via `PredicateManager` ([predicate generator](https://misode.github.io/predicate/)) |
+| Mode        | Check field value                        | Behavior |
+|-------------|------------------------------------------|----------|
+| `TAG`       | Scoreboard tag (or comma-separated list) | Player must have **all** listed tags |
+| `PLAYER`    | Display name (or comma-separated list)   | Player's display name must match |
+| `PREDICATE` | Loot predicate ID                        | Evaluated via `PredicateManager` ([predicate generator](https://misode.github.io/predicate/)) |
+| `MAINHAND`  | Item ID                                   | Player must have the item decleared in the main hand|
 
 ## Requirements
 
