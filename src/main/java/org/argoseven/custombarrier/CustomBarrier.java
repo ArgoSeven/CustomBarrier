@@ -9,8 +9,12 @@ import net.minecraft.world.World;
 
 public class CustomBarrier implements ModInitializer {
     public static final String MOD_ID = "custombarrier";
-            public static final Identifier OPEN_SCREEN_PACKET = new Identifier(MOD_ID, "open_screen");
+    public static final Identifier OPEN_SCREEN_PACKET = new Identifier(MOD_ID, "open_screen");
     public static final Identifier SINK_BARRIER_PACKET = new Identifier(MOD_ID, "sink_barrier");
+
+    public static final Identifier OPEN_EFFECTBLOCK_PACKET = new Identifier(MOD_ID, "open_effectblock");
+    public static final Identifier SINK_EFFECTBLOCK_PACKET = new Identifier(MOD_ID, "sink_effectblock");
+
 
 
     @Override
@@ -30,6 +34,20 @@ public class CustomBarrier implements ModInitializer {
                     be.setCheck(customString);
                     be.setMode(mode);
                     be.setOpaque(opaque);
+                    be.markDirty();
+                    BlockState state = world.getBlockState(pos);
+                    world.updateListeners(pos, state, state, 3);
+                }
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(SINK_EFFECTBLOCK_PACKET, (server, player, handler, buf, responseSender) -> {
+            BlockPos pos = buf.readBlockPos();
+            String particleId = buf.readString(32767);
+            server.execute(() -> {
+                World world = player.getWorld();
+                if (world.getBlockEntity(pos) instanceof EffectBlockEntity be) {
+                    be.setEffectId(particleId);
                     be.markDirty();
                     BlockState state = world.getBlockState(pos);
                     world.updateListeners(pos, state, state, 3);
