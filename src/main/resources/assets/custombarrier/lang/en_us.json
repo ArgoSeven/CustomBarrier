@@ -1,4 +1,6 @@
 {
   "block.custombarrier.custom_barrier": "Custom Barrier",
-  "effect.custombarrier.ethereal_effect": "Ethereal Effect"
+  "effect.custombarrier.ethereal_effect": "Ethereal Effect",
+  "block.custombarrier.effect_block": "Effect Block",
+  "item.custombarrier.custom_barrier": "Effect Block"
 }

@@ -149,6 +149,9 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
                     return;
                 }
                 particle = getParticleById(customBE.getParticleId());
+                if (particle == null) {
+                    return;
+                }
             }
 
             for (int i = 0; i < 8; i++) {
@@ -231,7 +234,7 @@ public class CustomBarrierBlock extends BlockWithEntity implements OperatorBlock
 
 
     private static ParticleEffect getParticleById(String id) {
-        if (id == null || id.isEmpty()) return ParticleTypes.SMOKE;
+        if (id == null || id.isEmpty()) return null ;
         try {
             StringReader reader = new StringReader(id);
             Identifier identifier = Identifier.fromCommandInput(reader);

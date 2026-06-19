@@ -27,13 +27,15 @@ public class CustomBarrierBlockItem extends BlockItem {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        if (stack.hasNbt()) {
-            String particleId = stack.getNbt().getCompound("BlockEntityTag").getString("particleId");
-            String customString = stack.getNbt().getCompound("BlockEntityTag").getString("customString");
+        if (stack.hasNbt() && stack.getNbt().contains("BlockEntityTag")) {
+            var tag = stack.getNbt().getCompound("BlockEntityTag");
+            String particleId = tag.getString("particleId");
+            String customString = tag.getString("customString");
 
-            tooltip.add(Text.literal(particleId).styled(style -> style.withColor(Formatting.GRAY).withItalic(true)));
-            tooltip.add(Text.literal(customString).styled(style -> style.withColor(Formatting.GREEN).withItalic(true)));
+            if (!particleId.isEmpty())
+                tooltip.add(Text.literal(particleId).styled(style -> style.withColor(Formatting.GRAY).withItalic(true)));
+            if (!customString.isEmpty())
+                tooltip.add(Text.literal(customString).styled(style -> style.withColor(Formatting.GREEN).withItalic(true)));
         }
-        super.appendTooltip(stack, world, tooltip, context);
     }
 }

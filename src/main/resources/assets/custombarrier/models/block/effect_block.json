@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "custombarrier:block/effect_block",
+    "particle": "minecraft:block/glass"
+  }
+}
